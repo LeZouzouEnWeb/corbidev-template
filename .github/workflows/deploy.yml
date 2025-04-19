@@ -1,0 +1,43 @@
+name: Deploy PHP Site to IONOS
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du dépôt
+        uses: actions/checkout@v3
+
+      - name: Configurer SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "${{ secrets.REMOTE_HOST }}" >> ~/.ssh/known_hosts
+          ls -lah ~/.ssh
+
+      - name: Tester la connexion SSH
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }} "echo 'Connexion réussie !'"
+
+      - name: Vérifier le dossier d’accueil
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.REMOTE_USER }}@"${{ secrets.REMOTE_HOST }}" "echo \$HOME"
+
+      - name: Afficher dossier d’accueil
+        run: |
+          echo "${{ secrets.REMOTE_CHEMIN }}"
+
+      - name: Afficher dossier plugin
+        run: |
+          echo "./${{ vars.DOSSIER_SITE_WEB }}/${{ vars.DOSSIER_PLUGIN }}"
+
+
+      - name: Déployer les fichiers sur IONOS
+        run: |
+          rsync -avz --delete --exclude-from=".rsync-ignore" -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./ ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:${{ secrets.REMOTE_CHEMIN }}/${{ vars.DOSSIER_SITE_WEB }}/${{ vars.DOSSIER_PLUGIN }}
