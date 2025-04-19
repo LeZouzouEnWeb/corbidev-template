@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <title>Page avec includes</title>
+</head>
+<body>
+    {include 'header.html'}
+
+    <h1>Bienvenue sur {site_name|upper}</h1>
+
+    {if is_admin}
+        <p>Vous êtes administrateur.</p>
+    {else}
+        <p>Vous êtes un utilisateur normal.</p>
+    {endif}
+
+    <h2>Liste des utilisateurs :</h2>
+    <ul>
+        {foreach users as user}
+            <li>{user}</li>
+        {endforeach}
+    </ul>
+
+    {include 'footer.html'}
+</body>
+</html>
